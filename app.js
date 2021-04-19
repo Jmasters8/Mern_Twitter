@@ -1,18 +1,38 @@
-const mongoose = require('mongoose');
-
+const mongoose = require("mongoose");
 const express = require("express");
 const app = express();
-
-
-app.get("/", (req, res) => res.send("potato"));
-
-const port = process.env.PORT || 5000;
-
-app.listen(port, () => console.log(`Server is running on port ${port}`));
-
+const users = require("./routes/api/users");
+const tweets = require("./routes/api/tweets");
+const bodyParser = require('body-parser');
 const db = require('./config/keys').mongoURI;
+const User = require('./models/User');
+const passport = require('passport');
+require('./config/passport')(passport);
+
+
 
 mongoose
   .connect(db, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
   .then(() => console.log("Connected to mongoDB successfully"))
   .catch(err => console.log(err));
+
+app.get("/", (req, res) => {
+  const user = new User({
+    handle: 'Jason',
+    email: 'jason@jason.jason',
+    password: 'jasonisgreat123'
+  })
+  user.save()
+  res.send("potato");
+});
+
+app.use(passport.initialize());
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use("/api/users", users);
+app.use("/api/tweets", tweets);
+
+const port = process.env.PORT || 5000;
+
+app.listen(port, () => console.log(`Server is running on port ${port}`));
